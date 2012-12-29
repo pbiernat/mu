@@ -5,39 +5,50 @@
 #include <stdio.h>
 #include <stdint.h>
 
+int16_t calc_checksum(FILE * sram, int offset) {
+  
+  uint32_t checksum_;
+  uint16_t aw;
+  uint16_t rw;
+  bool carry = false;
+  std::cout << offset;
+  if (offset != 0) 
+    fseek(sram,offset,SEEK_SET);
+  
+  for (int i=0;i < 767 ; i++) {
+    fread(&rw,2,1,sram);
+    // if (carry)
+      //  std::cout << "Carry! \n";
+    checksum_ = aw + rw + carry;
+    //std::cout << "Checksum: " << std::hex << checksum << "\n";
+    carry = checksum_ > 0xffff;
+    aw = checksum_;
+  }
+  checksum_ = int16_t(checksum_);
+  //std::cout << "Checksum = " << std::hex << checksum << "\n";
+  return checksum_;
+ }
+
+
 int main(int argc, char* argv[]) {
   if (argc != 2) {
     std::cout << "Usage: " << argv[0] << " <Final Fantasy 5 SRAM> \n";
     return 1;
   }
   
-  FILE * sram;
-  sram = fopen(argv[1],"r+b");
+  FILE * game;
+  game = fopen(argv[1],"r+b");
   //if (!sram)
   // return 1;
-  int offset = 0;
-  uint32_t checksum;
-  uint16_t aw;
-  uint16_t rw;
-  bool carry = false;
-  
-  for (int i=0;i < 767 ; i++) {
-    fread(&rw,2,1,sram);
-    offset += 2;
-    if (carry)
-      std::cout << "Carry! \n";
-    checksum = aw + rw + carry;
-    std::cout << "Checksum: " << std::hex << checksum << "\n";
-    carry = checksum > 0xffff;
-    aw = checksum;
+  int16_t checksum;
+
+  for(int i = 0; i < 4; i++) {
+    checksum = calc_checksum(game,(i*1792));
+    std::cout << std::hex << "Checksum: " << checksum << "\n";
+    fseek(game,(8176 + (i*2)),SEEK_SET);
+    fwrite(&checksum,2,1,game);
   }
-  checksum = int16_t(checksum);
-  //  std::cout << offset;
-  std::cout << "Checksum = " << std::hex << checksum << "\n";
-  //Write to appropriate offset.
-  fseek(sram,8176,SEEK_SET);
-  fwrite(&checksum,2,1,sram);
-  fclose(sram);
- return 0;
+  fclose(game);
+  return 0;
 }
 

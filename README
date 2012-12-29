@@ -1,0 +1,18 @@
+mu is a small application meant to fix FF5 SRAM checksums. FF5 performs a quick
+check of data, then compares it to offset 0x1FF0 (of the SRAM), this is to
+prevent the game from running corrupted data. 
+
+However, if you wish to modify the SRAM for use in ultra-precise emulators (or
+real hardware), you will cause the game's check to fail. mu calculates the new
+(correct) checksum and places it at 0x1FF0, allowing the game to continue.
+
+--Usage--
+$:./mu.bin <ff5.srm>
+
+------------------->
+BE CAREFUL. There are currently no checks in place to ensure that the file you
+provide is actually FF5 SRAM. If you have read/write permissions, the 
+program will go on and happily overwrite whatever happens to be at 0x1FF0. 
+<------------------
+
+sinthet.wordpress.com

@@ -17,31 +17,25 @@ int16_t calc_checksum(FILE * sram, int offset) {
   
   for (int i=0;i < 767 ; i++) {
     fread(&rw,2,1,sram);
-    // if (carry)
-      //  std::cout << "Carry! \n";
     checksum_ = aw + rw + carry;
-    //std::cout << "Checksum: " << std::hex << checksum << "\n";
     carry = checksum_ > 0xffff;
     aw = checksum_;
   }
   checksum_ = int16_t(checksum_);
-  //std::cout << "Checksum = " << std::hex << checksum << "\n";
   return checksum_;
  }
-
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
     std::cout << "Usage: " << argv[0] << " <Final Fantasy 5 SRAM> \n";
     return 1;
   }
-  
   FILE * game;
   game = fopen(argv[1],"r+b");
-  //if (!sram)
-  // return 1;
+  
   int16_t checksum;
-
+  //1792 == 0x700 == Sive of Each Save File
+  //8176 == 0x1FF0 == Offset of Checksum in SRAM.
   for(int i = 0; i < 4; i++) {
     checksum = calc_checksum(game,(i*1792));
     std::cout << std::hex << "Checksum: " << checksum << "\n";
